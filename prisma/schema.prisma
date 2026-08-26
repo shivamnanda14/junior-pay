@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ParentUser {
+  id            String            @id @default(uuid())
+  phoneNumber   String            @unique // The primary login ID
+  name          String
+  upiId         String?           // E.g., 9876543210@ybl
+  connections   ChildConnection[]
+  transactions  Transaction[]
+  inviteCodes   InviteCode[]
+  createdAt     DateTime          @default(now())
+}
+
+model Child {
+  id            String            @id @default(uuid())
+  username      String            @unique // The junior's login ID
+  name          String
+  pin           String            // 4-digit secure app PIN
+  connections   ChildConnection[]
+  transactions  Transaction[]
+  createdAt     DateTime          @default(now())
+}
+model ChildConnection {
+  id           String     @id @default(uuid())
+  childId      String
+  parentId     String
+  dailyLimit   Float      @default(500.0)
+  monthlySpend Float      @default(0.0)
+
+  child        Child      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent       ParentUser @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, parentId]) 
+}
+
+model InviteCode {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  parentId    String
+  childName   String
+  dailyLimit  Float      @default(500.0)
+  isUsed      Boolean    @default(false)
+  expiresAt   DateTime
+  parent      ParentUser @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+}
+
+model Transaction {
+  id            String        @id @default(uuid())
+  childId       String
+  parentId      String
+  merchantVpa   String    
+  merchantName  String
+  amount        Float
+  status        TxStatus      @default(PENDING)
+  childNote     String?   
+  createdAt     DateTime      @default(now())
+
+  child         Child         @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent        ParentUser    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+}
+
+enum TxStatus {
+  PENDING
+  APPROVED_AND_PAID
+  DECLINED_BY_PARENT
+  TIMEOUT_MERCHANT
+}
