@@ -8,30 +8,33 @@ datasource db {
 }
 
 model ParentUser {
-  id            String            @id @default(uuid())
-  phoneNumber   String            @unique // The primary login ID
-  name          String
-  upiId         String?           // E.g., 9876543210@ybl
-  connections   ChildConnection[]
-  transactions  Transaction[]
-  inviteCodes   InviteCode[]
-  createdAt     DateTime          @default(now())
+  id           String            @id @default(uuid())
+  phoneNumber  String            @unique // The primary login ID
+  name         String
+  upiId        String?           // E.g., 9876543210@ybl
+  connections  ChildConnection[]
+  transactions Transaction[]
+  inviteCodes  InviteCode[]
+  createdAt    DateTime          @default(now())
 }
 
 model Child {
-  id            String            @id @default(uuid())
-  username      String            @unique // The junior's login ID
-  name          String
-  pin           String            // 4-digit secure app PIN
-  connections   ChildConnection[]
-  transactions  Transaction[]
-  createdAt     DateTime          @default(now())
+  id           String            @id @default(uuid())
+  username     String            @unique // The junior's login ID
+  name         String
+  pin          String            // 4-digit secure app PIN
+  connections  ChildConnection[]
+  transactions Transaction[]
+  createdAt    DateTime          @default(now())
 }
+
 model ChildConnection {
   id           String     @id @default(uuid())
   childId      String
   parentId     String
-  dailyLimit   Float      @default(500.0)
+  isPrimary    Boolean    @default(false)
+  limitType    LimitType  @default(DAILY)
+  limitAmount  Float      @default(500.0)
   monthlySpend Float      @default(0.0)
 
   child        Child      @relation(fields: [childId], references: [id], onDelete: Cascade)
@@ -40,6 +43,10 @@ model ChildConnection {
   @@unique([childId, parentId]) 
 }
 
+enum LimitType {
+  DAILY
+  MONTHLY
+}
 model InviteCode {
   id          String     @id @default(uuid())
   code        String     @unique
@@ -53,18 +60,18 @@ model InviteCode {
 }
 
 model Transaction {
-  id            String        @id @default(uuid())
-  childId       String
-  parentId      String
-  merchantVpa   String    
-  merchantName  String
-  amount        Float
-  status        TxStatus      @default(PENDING)
-  childNote     String?   
-  createdAt     DateTime      @default(now())
+  id           String     @id @default(uuid())
+  childId      String
+  parentId     String
+  merchantVpa  String  
+  merchantName String
+  amount       Float
+  status       TxStatus   @default(PENDING)
+  childNote    String?   
+  createdAt    DateTime   @default(now())
 
-  child         Child         @relation(fields: [childId], references: [id], onDelete: Cascade)
-  parent        ParentUser    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  child        Child      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent       ParentUser @relation(fields: [parentId], references: [id], onDelete: Cascade)
 }
 
 enum TxStatus {

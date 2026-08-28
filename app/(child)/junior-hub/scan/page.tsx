@@ -17,21 +17,20 @@ export default async function JuniorScanPage({ searchParams }: PageProps) {
   const defaultVpa = resolvedParams.vpa || "";
   const defaultName = resolvedParams.name || "";
 
-  // Fetch connected guardians for the dropdown form
   const connections = await prisma.childConnection.findMany({
     where: { childId: session.userId },
     include: { parent: true },
   });
 
   return (
-    <div className="space-y-6 max-w-md mx-auto pb-10">
-      {/* Back Link */}
-      <Link href="/junior-hub" className="text-xs font-bold text-slate-400 hover:text-slate-600 transition">
+    // Added w-full and px-4 for mobile edge spacing
+    <div className="space-y-4 sm:space-y-6 w-full max-w-md mx-auto px-2 sm:px-4 pb-10">
+      <Link href="/junior-hub" className="text-xs font-bold text-slate-400 hover:text-slate-600 transition inline-block">
         ← Back to Hub
       </Link>
 
       <div>
-        <h2 className="text-2xl font-extrabold text-slate-900 mb-1">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-1">
           {isManual ? "Complete Payment Request" : "Scan Merchant QR"}
         </h2>
         <p className="text-xs text-slate-500">
@@ -42,12 +41,11 @@ export default async function JuniorScanPage({ searchParams }: PageProps) {
       </div>
 
       {connections.length === 0 ? (
-        <div className="bg-white p-6 rounded-3xl border border-rose-200 text-center space-y-3">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-rose-200 text-center space-y-3 mx-2 sm:mx-0">
           <p className="text-sm font-bold text-slate-800">No Guardians Connected</p>
           <p className="text-xs text-slate-500">You need at least one linked parent to request payment approvals.</p>
         </div>
       ) : isManual ? (
-        // Show the payment request form once QR is scanned or manual mode is selected
         <ScanForm 
           connections={connections} 
           defaultName={defaultName} 
@@ -55,7 +53,6 @@ export default async function JuniorScanPage({ searchParams }: PageProps) {
           isManual={isManual} 
         />
       ) : (
-        // Show Live Camera QR Scanner
         <div className="space-y-4">
           <QRScanner />
           
@@ -64,7 +61,7 @@ export default async function JuniorScanPage({ searchParams }: PageProps) {
             <div className="mt-3">
               <Link 
                 href="/junior-hub/scan?manual=true" 
-                className="inline-block bg-slate-100 text-slate-800 px-6 py-3 rounded-xl font-bold text-xs hover:bg-slate-200 transition"
+                className="inline-block w-full sm:w-auto bg-slate-100 text-slate-800 px-6 py-3 rounded-xl font-bold text-xs hover:bg-slate-200 transition"
               >
                 Enter UPI ID Manually Instead
               </Link>

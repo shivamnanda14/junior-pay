@@ -38,17 +38,16 @@ export default function ScanForm({
   ];
 
   return (
-    <form action={formAction} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+    // Responsive padding: p-4 on mobile, p-6 on larger screens
+    <form action={formAction} className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
       
-      {/* Friendly Error Banner on Screen */}
       {state?.error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-2xl text-xs font-bold flex items-center gap-2">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 sm:p-4 rounded-2xl text-xs font-bold flex items-center gap-2">
           <span>⚠️</span>
           <span>{state.error}</span>
         </div>
       )}
 
-      {/* Merchant Name */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Merchant / Store Name</label>
         <input 
@@ -57,11 +56,10 @@ export default function ScanForm({
           defaultValue={defaultName}
           placeholder="e.g., Sharma General Store" 
           required 
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 text-sm focus:outline-none focus:border-[#5f259f]"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#5f259f]"
         />
       </div>
 
-      {/* Merchant UPI ID / VPA */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Merchant UPI ID (VPA)</label>
         <input 
@@ -70,11 +68,10 @@ export default function ScanForm({
           defaultValue={defaultVpa}
           placeholder="e.g., merchant@oksbi" 
           required 
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono font-bold text-slate-900 text-sm focus:outline-none focus:border-[#5f259f]"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-mono font-bold text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#5f259f]"
         />
       </div>
 
-      {/* Amount */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
         <input 
@@ -83,18 +80,17 @@ export default function ScanForm({
           name="amount" 
           placeholder="0.00" 
           required 
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-extrabold text-slate-900 text-lg focus:outline-none focus:border-[#5f259f]"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-extrabold text-slate-900 text-base sm:text-lg focus:outline-none focus:border-[#5f259f]"
         />
       </div>
 
-      {/* Payment Reason Selection */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Select Purpose of Payment</label>
         <select 
           name="reason" 
           value={selectedReason}
           onChange={(e) => setSelectedReason(e.target.value)}
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 text-sm focus:outline-none focus:border-[#5f259f] mb-2"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#5f259f] mb-2"
         >
           {commonReasons.map((r, i) => (
             <option key={i} value={r}>{r}</option>
@@ -107,19 +103,18 @@ export default function ScanForm({
               type="text" 
               name="customNote" 
               placeholder="Please specify why you need this payment (Required)..." 
-              className="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+              className="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
             />
           </div>
         )}
       </div>
 
-      {/* Select Guardian Dropdown */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Request Approval From</label>
         <select 
           name="parentId" 
           required 
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 text-sm focus:outline-none focus:border-[#5f259f]"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#5f259f]"
         >
           <option value="">Select a Guardian...</option>
           {connections.map((conn) => (
@@ -130,7 +125,6 @@ export default function ScanForm({
         </select>
       </div>
 
-      {/* Security PIN Field */}
       <div className="pt-2 border-t border-slate-100">
         <label className="block text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-1">Enter Your 4-Digit Login PIN to Confirm</label>
         <input 
@@ -143,15 +137,14 @@ export default function ScanForm({
           autoCorrect="off"
           spellCheck="false"
           data-lpignore="true"
-          className="w-full bg-rose-50/50 border border-rose-200 rounded-xl px-4 py-3 font-mono font-extrabold text-center tracking-widest text-slate-900 text-lg focus:outline-none focus:border-rose-500"
+          className="w-full bg-rose-50/50 border border-rose-200 rounded-xl px-3 sm:px-4 py-2 sm:py-3 font-mono font-extrabold text-center tracking-widest text-slate-900 text-base sm:text-lg focus:outline-none focus:border-rose-500"
         />
       </div>
 
-      {/* Submit Button */}
       <button 
         type="submit" 
         disabled={isPending}
-        className="w-full bg-[#5f259f] text-white py-4 rounded-xl font-bold hover:bg-purple-800 transition shadow-lg mt-2 disabled:opacity-50"
+        className="w-full bg-[#5f259f] text-white py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-800 transition shadow-lg mt-2 disabled:opacity-50 text-sm sm:text-base"
       >
         {isPending ? "Validating..." : "Authorize & Send Request"}
       </button>

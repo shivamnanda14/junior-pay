@@ -23,30 +23,31 @@ export default async function HistoryPage() {
   );
 
   return (
-    <div className="max-w-4xl p-6">
-      <h1 className="text-3xl font-extrabold text-[#1e1b4b] mb-2">
+    // Adjusted padding and max-width for smoother mobile margins
+    <div className="w-full max-w-4xl p-4 sm:p-6 mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e1b4b] mb-2">
         Transactions & Approvals
       </h1>
-      <p className="text-slate-500 mb-8">
+      <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">
         Review pending requests and your past payment history.
       </p>
 
-      <h2 className="text-sm font-bold text-orange-500 mb-4 tracking-wider uppercase">
+      <h2 className="text-xs sm:text-sm font-bold text-orange-500 mb-3 sm:mb-4 tracking-wider uppercase">
         Pending Requests (Action Required)
       </h2>
-      <div className="flex flex-col mb-10">
+      <div className="flex flex-col mb-8 sm:mb-10">
         {pendingTransactions.length > 0 ? (
           pendingTransactions.map((tx) => (
             <TransactionCard key={tx.id} transaction={tx} />
           ))
         ) : (
-          <p className="text-slate-500 italic bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <p className="text-slate-500 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm">
             No active requests at the moment.
           </p>
         )}
       </div>
 
-      <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-wider uppercase">
+      <h2 className="text-xs sm:text-sm font-bold text-slate-500 mb-3 sm:mb-4 tracking-wider uppercase">
         Past & Expired Requests
       </h2>
       <div className="flex flex-col space-y-3 opacity-75">
@@ -64,18 +65,19 @@ export default async function HistoryPage() {
             };
 
             return (
-              <div key={tx.id} className="border border-slate-200 bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+              // Changed to flex-col on mobile so long merchant names don't crush the status badge
+              <div key={tx.id} className="border border-slate-200 bg-white rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 shadow-sm">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1" suppressHydrationWarning>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-1" suppressHydrationWarning>
                     {new Date(tx.createdAt).toLocaleDateString()} at {new Date(tx.createdAt).toLocaleTimeString()}
                   </p>
-                  <p className="font-bold text-gray-900 text-base">
-                    ₹{tx.amount} <span className="font-normal text-sm">at {tx.merchantName || "Unknown Merchant"}</span>
+                  <p className="font-bold text-gray-900 text-sm sm:text-base">
+                    ₹{tx.amount} <span className="font-normal text-xs sm:text-sm">at {tx.merchantName || "Unknown Merchant"}</span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">UPI ID: {tx.merchantVpa}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate max-w-[200px] sm:max-w-none">UPI ID: {tx.merchantVpa}</p>
                 </div>
                 
-                <div className={`px-4 py-1.5 rounded-lg border text-xs font-bold tracking-wide ${statusColors[displayStatus] || "text-slate-600 bg-slate-100"}`}>
+                <div className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg border text-[10px] sm:text-xs font-bold tracking-wide w-full sm:w-auto text-center ${statusColors[displayStatus] || "text-slate-600 bg-slate-100"}`}>
                   {displayStatus === "APPROVED_AND_PAID" ? "PAID" : displayStatus}
                 </div>
               </div>

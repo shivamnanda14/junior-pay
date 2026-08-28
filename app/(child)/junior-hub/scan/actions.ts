@@ -7,65 +7,89 @@ import { redirect } from "next/navigation";
 export async function createPaymentRequest(formData: FormData) {
   const session = await getCurrentUser();
   if (!session || session.role !== "JUNIOR") {
-    return { error: "Unauthorized session." };
+    return { error: "Unauthorized" };
   }
 
-  const merchantName = (formData.get("merchantName") as string) || "Unknown Merchant";
-  const merchantVpa = (formData.get("merchantVpa") as string)?.trim();
-  const amount = parseFloat(formData.get("amount") as string);
+  const merchantName = formData.get("merchantName") as string;
+  const merchantVpa = formData.get("merchantVpa") as string;
+  const amountText = formData.get("amount") as string;
+  const reason = formData.get("reason") as string;
+  const customNote = formData.get("customNote") as string;
   const parentId = formData.get("parentId") as string;
-  const reason = (formData.get("reason") as string) || "General Expense";
-  const customNote = (formData.get("customNote") as string)?.trim() || "";
-  const pin = (formData.get("pin") as string)?.trim();
+  const pin = formData.get("pin") as string;
 
-  if (!merchantVpa || isNaN(amount) || !parentId || !pin) {
-    return { error: "Missing required transaction details or security PIN." };
+  const amount = parseFloat(amountText);
+
+  if (!merchantName || !merchantVpa || !amount || !parentId || !pin) {
+    return { error: "All fields are required." };
   }
 
-  if (reason === "🔄 Other (Specify)" && !customNote) {
-    return { error: "Please specify the purpose of payment when selecting Other." };
+  if (amount <= 0) {
+    return { error: "Amount must be greater than zero." };
   }
 
-  // 1. Verify PIN
-  const junior = await prisma.child.findUnique({
+  // 1. Verify Junior's PIN
+  const child = await prisma.child.findUnique({
     where: { id: session.userId },
   });
 
-  if (!junior || junior.pin !== pin) {
-    return { error: "Incorrect security PIN. Request denied." };
+  if (child?.pin !== pin) {
+    return { error: "Incorrect security PIN." };
   }
 
-  // 2. Verify connection & limit
-  const connection = await prisma.childConnection.findFirst({
+  // 2. Fetch the Guardian Connection and their specific limit
+  const connection = await prisma.childConnection.findUnique({
     where: {
-      childId: session.userId,
-      parentId: parentId,
+      childId_parentId: {
+        childId: session.userId,
+        parentId: parentId,
+      },
     },
   });
 
   if (!connection) {
-    return { error: "Selected guardian is not connected to your account." };
+    return { error: "Guardian connection not found." };
   }
 
-  // 🚨 LIMIT EXCEEDED CHECK: Calculate remaining allowance limit
-  if (amount > connection.dailyLimit) {
+  // 3. CUMULATIVE DAILY / MONTHLY LIMIT LOGIC
+  const now = new Date();
+  let startDate = new Date();
+
+  if (connection.limitType === "DAILY") {
+    startDate.setHours(0, 0, 0, 0); // Resets every day at 12:00 AM
+  } else {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0); // Resets 1st of every month
+  }
+
+  const periodTransactions = await prisma.transaction.findMany({
+    where: {
+      childId: session.userId,
+      parentId: parentId,
+      createdAt: { gte: startDate },
+      status: { in: ["PENDING", "APPROVED_AND_PAID"] },
+    },
+  });
+
+  const spentInPeriod = periodTransactions.reduce((total, tx) => total + tx.amount, 0);
+  const remainingLimit = Math.max(0, connection.limitAmount - spentInPeriod);
+
+  if (amount > remainingLimit) {
     return { 
-      error: `Limit exceeded! Your daily limit for this guardian is ₹${connection.dailyLimit}. You cannot request ₹${amount}.` 
+      error: `${connection.limitType === "DAILY" ? "Daily" : "Monthly"} limit exceeded! You only have ₹${remainingLimit.toFixed(2)} remaining for this guardian.` 
     };
   }
 
-  const fullPurpose = reason === "🔄 Other (Specify)" 
-    ? customNote 
-    : (customNote ? `${reason}: ${customNote}` : reason);
+  // 4. Create the Transaction
+  const finalNote = reason === "🔄 Other (Specify)" ? customNote : reason;
 
-  // 3. Create Transaction
   await prisma.transaction.create({
     data: {
-      amount: amount,
-      merchantName: `${merchantName} (${fullPurpose})`,
-      merchantVpa: merchantVpa,
       childId: session.userId,
       parentId: parentId,
+      merchantName: merchantName,
+      merchantVpa: merchantVpa,
+      amount: amount,
+      childNote: finalNote,
       status: "PENDING",
     },
   });

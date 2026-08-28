@@ -13,7 +13,6 @@ export default function QRScanner() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [cameraStarted, setCameraStarted] = useState(false);
 
-  // Clean up completely when leaving the page
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -23,7 +22,6 @@ export default function QRScanner() {
     };
   }, []);
 
-  // Camera scanner (Parked for now, but structurally ready for later)
   const handleStartCamera = () => {
     setScanError(null);
     if (!videoRef.current) return;
@@ -54,7 +52,6 @@ export default function QRScanner() {
       });
   };
 
-  // The Flawless Gallery / Screenshot Scanner
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -71,7 +68,6 @@ export default function QRScanner() {
     }
   };
 
-  // Safe UPI deep-link parser
   const processPayload = (decodedText: string) => {
     let vpa = "";
     let name = "";
@@ -92,7 +88,6 @@ export default function QRScanner() {
       const params = new URLSearchParams({ manual: "true", vpa, name });
       if (amount) params.append("amount", amount);
 
-      // Route to the payment form with the extracted data
       router.push(`/junior-hub/scan?${params.toString()}`);
     } catch (error) {
       setScanError("Scanned successfully, but the QR code is not a valid UPI format.");
@@ -101,15 +96,15 @@ export default function QRScanner() {
   };
 
   return (
-    <div className="space-y-4 max-w-sm mx-auto pb-10">
+    <div className="space-y-4 w-full max-w-sm mx-auto pb-10">
       {scanError && (
         <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-bold text-center">
           {scanError}
         </div>
       )}
 
-      {/* Camera Viewport (Parked) */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-black shadow-inner aspect-square flex items-center justify-center">
+      {/* Camera Viewport: Added max-w-[320px] and mx-auto for perfect mobile centering */}
+      <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-3xl border border-slate-200 bg-black shadow-inner aspect-square flex items-center justify-center">
         
         <video 
           ref={videoRef}
@@ -117,14 +112,14 @@ export default function QRScanner() {
         />
         
         {!cameraStarted && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10 p-6 text-center">
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-2xl">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10 p-4 sm:p-6 text-center">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-xl sm:text-2xl">
               📷
             </div>
             <button 
               type="button"
               onClick={handleStartCamera}
-              className="bg-purple-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-purple-600 active:scale-95 transition"
+              className="bg-purple-500 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-xl shadow-lg hover:bg-purple-600 active:scale-95 transition text-xs sm:text-sm"
             >
               Test Camera (WIP)
             </button>
@@ -132,7 +127,6 @@ export default function QRScanner() {
         )}
       </div>
 
-      {/* The Working Gallery Scanner */}
       <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 text-center space-y-2">
         <p className="text-xs font-bold text-purple-900">Scan from Gallery</p>
         <label className="block w-full bg-[#5f259f] text-white py-3 rounded-xl font-bold text-xs cursor-pointer hover:bg-purple-800 transition shadow">
