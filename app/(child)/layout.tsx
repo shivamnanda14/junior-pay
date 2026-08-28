@@ -19,11 +19,17 @@ export default function JuniorLayout({
             <span className="text-xl">👦</span>
             <span className="font-extrabold text-slate-900 tracking-tight text-lg sm:text-xl">Junior Pass</span>
           </div>
-          <form action={logout}>
-            <button type="submit" className="text-xs bg-slate-100 text-slate-600 font-semibold px-3 py-1.5 rounded-full hover:bg-slate-200 transition">
-              Switch
-            </button>
-          </form>
+          
+          <div className="flex items-center gap-3">
+            <Link href="/?view=home" className="text-[10px] sm:text-xs font-bold text-slate-400 hover:text-[#5f259f] transition uppercase tracking-wider">
+              Website
+            </Link>
+            <form action={logout}>
+              <button type="submit" className="text-xs bg-slate-100 text-slate-600 font-semibold px-3 py-1.5 rounded-full hover:bg-slate-200 transition">
+                Switch
+              </button>
+            </form>
+          </div>
         </header>
 
         {/* Scrollable Dynamic Content: Adjusted padding for mobile screens */}

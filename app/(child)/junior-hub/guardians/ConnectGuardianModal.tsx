@@ -1,40 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { linkGuardian } from "./actions";
 
 export default function ConnectGuardianModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const handleConnect = async (e: React.FormEvent) => {
+  const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("/api/junior/connect-parent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inviteCode: code }),
-      });
+    const formData = new FormData();
+    formData.append("code", code);
 
-      if (res.ok) {
+    startTransition(async () => {
+      // Capture the returned object from the server action
+      const result = await linkGuardian(formData);
+      
+      if (result?.error) {
+        // Display the specific error message from the backend
+        setError(result.error);
+      } else {
         setIsOpen(false);
         setCode("");
-        router.refresh(); // Refresh page to show new guardian
-      } else {
-        const data = await res.json();
-        setError(data.error || "Invalid or expired code.");
       }
-    } catch {
-      setError("Network error. Try again.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -53,7 +46,7 @@ export default function ConnectGuardianModal() {
             <p className="text-xs text-slate-500 mb-4">Ask your parent to generate a secure code from their Parent Suite.</p>
             
             <form onSubmit={handleConnect} className="space-y-4">
-              {error && <p className="text-xs text-rose-600 bg-rose-50 p-2 rounded-lg">{error}</p>}
+              {error && <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-lg font-medium">{error}</p>}
               
               <input 
                 type="text" 
@@ -68,17 +61,20 @@ export default function ConnectGuardianModal() {
               <div className="flex gap-2">
                 <button 
                   type="button" 
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setError("");
+                  }}
                   className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  disabled={loading}
+                  disabled={isPending || code.length < 6}
                   className="flex-1 py-3 bg-[#5f259f] text-white font-bold rounded-xl text-sm disabled:opacity-50"
                 >
-                  {loading ? "Linking..." : "Connect"}
+                  {isPending ? "Linking..." : "Connect"}
                 </button>
               </div>
             </form>

@@ -16,11 +16,17 @@ export default function ParentLayout({
           <span className="text-xl">👨‍👩‍👧</span>
           <span className="text-lg font-extrabold tracking-tight">Parent Suite</span>
         </div>
-        <form action={logout}>
-          <button type="submit" className="text-xs bg-slate-800 text-rose-400 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">
-            Log Out
-          </button>
-        </form>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/?view=home" className="text-xl hover:text-white transition" title="View Website">
+            🌐
+          </Link>
+          <form action={logout}>
+            <button type="submit" className="text-xs bg-slate-800 text-rose-400 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">
+              Log Out
+            </button>
+          </form>
+        </div>
       </header>
       
       {/* The Parent Sidebar (Hidden on Mobile, Visible on Desktop) */}
@@ -42,6 +48,12 @@ export default function ParentLayout({
           <Link href="/parent-dashboard/history" className="block px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 hover:text-white transition">
             Transaction History
           </Link>
+
+          <div className="pt-4 mt-4 border-t border-slate-800">
+            <Link href="/?view=home" className="flex items-center gap-2 px-4 py-3 text-slate-400 font-semibold hover:text-white hover:bg-slate-800 rounded-lg transition">
+              <span>🌐</span> View Homepage
+            </Link>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-800">

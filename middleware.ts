@@ -2,37 +2,39 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { decrypt } from '@/lib/session';
 
-// 1. Specify which routes the middleware should protect
-// This regex tells it to run on every page EXCEPT background Next.js files and images
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const urlParams = request.nextUrl.searchParams;
 
   // Define our route groups
   const isParentRoute = path.startsWith('/parent-dashboard');
   const isJuniorRoute = path.startsWith('/junior-hub');
   const isAuthRoute = path.startsWith('/login');
   const isPublicRoute = path === '/';
+  
+  // The bypass flag allows logged-in users to view the landing page if they explicitly click a link to it
+  const isViewingHome = urlParams.get('view') === 'home';
 
-  // 2. Look for the secure HTTP-Only cookie
+  // Look for the secure HTTP-Only cookie
   const cookie = request.cookies.get('junior_session')?.value;
   const session = await decrypt(cookie);
 
-  // 3. SECURITY GATE: Unauthenticated Users
+  // SECURITY GATE: Unauthenticated Users
   if ((isParentRoute || isJuniorRoute) && !session) {
-    // If they have no cookie and try to access a dashboard, kick them to login
     return NextResponse.redirect(new URL('/login', request.nextUrl));
   }
 
-  // 4. ROUTING GATE: Authenticated Users
+  // ROUTING GATE: Authenticated Users
   if (session) {
     const { role } = session;
 
-    // A. The "Remember Me" Auto-Login Feature
-    if (isAuthRoute || isPublicRoute) {
+    // Auto-Login Feature & Default Dashboard Routing
+    // Redirects to dashboard IF they are on /login OR if they hit the root URL without the bypass flag
+    if (isAuthRoute || (isPublicRoute && !isViewingHome)) {
       if (role === 'PARENT') {
         return NextResponse.redirect(new URL('/parent-dashboard', request.nextUrl));
       }
@@ -41,17 +43,17 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // B. Prevent Parents from snooping in the Junior Hub
+    // Prevent Parents from snooping in the Junior Hub
     if (isJuniorRoute && role !== 'JUNIOR') {
       return NextResponse.redirect(new URL('/parent-dashboard', request.nextUrl));
     }
 
-    // C. Prevent Juniors from accessing the Parent Dashboard
+    // Prevent Juniors from accessing the Parent Dashboard
     if (isParentRoute && role !== 'PARENT') {
       return NextResponse.redirect(new URL('/junior-hub', request.nextUrl));
     }
   }
 
-  // 5. If all checks pass, let them load the page
+  // If all checks pass, let them load the page
   return NextResponse.next();
 }
