@@ -49,7 +49,7 @@ export default async function GuardiansPage() {
       </div>
 
       <div className="space-y-3">
-        {connectionsWithStats.map((conn) => (
+        {connectionsWithStats.map((conn: any) => (
           <div key={conn.id} className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-100 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

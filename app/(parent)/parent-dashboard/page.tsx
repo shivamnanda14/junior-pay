@@ -100,7 +100,9 @@ export default async function ParentDashboardPage() {
               <div key={conn.id} className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <p className="font-bold text-base sm:text-lg text-slate-900">{conn.child.name}</p>
-                  <p className="text-xs sm:text-sm text-slate-500">@{conn.child.username} • Daily Limit: ₹{conn.dailyLimit}</p>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    @{conn.child.username} • {conn.limitType || "DAILY"} Limit: ₹{conn.limitAmount}
+                  </p>
                 </div>
                 <Link href={`/parent-dashboard/child/${conn.id}`} className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition">

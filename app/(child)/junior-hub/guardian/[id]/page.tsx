@@ -59,8 +59,11 @@ export default async function JuniorGuardianDetailPage({ params }: PageProps) {
 
         {/* Read-Only Limit Status */}
         <div className="flex justify-between items-center bg-purple-50 p-4 rounded-2xl border border-purple-100 text-purple-900">
-          <span className="text-xs font-bold uppercase tracking-wider">Assigned Daily Limit</span>
-          <span className="text-lg font-extrabold">₹{connection.dailyLimit}</span>
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider block">Assigned Limit</span>
+            <span className="text-[10px] font-medium text-purple-700 capitalize">{connection.limitType.toLowerCase()}-wise cap</span>
+          </div>
+          <span className="text-lg font-extrabold">₹{connection.limitAmount}</span>
         </div>
       </div>
 

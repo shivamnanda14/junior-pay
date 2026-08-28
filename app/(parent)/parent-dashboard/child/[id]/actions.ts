@@ -10,11 +10,15 @@ export async function updateDailyLimit(formData: FormData) {
   if (!session || session.role !== "PARENT") throw new Error("Unauthorized");
 
   const connectionId = formData.get("connectionId") as string;
-  const newLimit = parseFloat(formData.get("dailyLimit") as string);
+  const limitType = formData.get("limitType") as "DAILY" | "MONTHLY";
+  const limitAmount = parseFloat(formData.get("dailyLimit") as string);
 
   await prisma.childConnection.update({
     where: { id: connectionId },
-    data: { dailyLimit: newLimit },
+    data: { 
+      limitType: limitType || "DAILY",
+      limitAmount: limitAmount 
+    },
   });
 
   revalidatePath(`/parent-dashboard/child/${connectionId}`);

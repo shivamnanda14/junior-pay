@@ -90,7 +90,7 @@ export default async function ParentChildDetailPage({ params }: PageProps) {
               <input 
                 type="number" 
                 name="limitAmount" 
-                defaultValue={connection.limitAmount ?? connection.dailyLimit} 
+                defaultValue={connection.limitAmount} 
                 required 
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-slate-900 text-sm sm:text-base focus:outline-none focus:border-[#5f259f]" 
               />
@@ -121,7 +121,7 @@ export default async function ParentChildDetailPage({ params }: PageProps) {
                   <div>
                     <p className="text-xs sm:text-sm font-bold text-slate-800">{guardian.parent.name}</p>
                     <p className="text-[10px] sm:text-xs text-slate-500 font-medium bg-slate-200/50 inline-block px-2 py-0.5 rounded mt-1">
-                      {guardian.limitType || "DAILY"} Limit: ₹{guardian.limitAmount ?? guardian.dailyLimit}
+                      {guardian.limitType || "DAILY"} Limit: ₹{guardian.limitAmount}
                     </p>
                   </div>
                 </div>
