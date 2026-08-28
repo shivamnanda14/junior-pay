@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const transactionId = params.id;
+    const { id: transactionId } = await params;
     const body = await req.json().catch(() => ({}));
-    
-    console.log("Verifying payment for transaction ID:", transactionId, "Data received:", body);
+
+    console.log(
+      "Verifying payment for transaction ID:",
+      transactionId,
+      "Data received:",
+      body
+    );
 
     // Try updating by the exact ID first
     try {
@@ -16,10 +24,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       });
     } catch (dbErr) {
       // Fallback: if custom ID, update the most recent PENDING transaction for safety
-      console.log("ID match failed, updating latest pending transaction as fallback.");
+      console.log(
+        "ID match failed, updating latest pending transaction as fallback."
+      );
       const latestPending = await prisma.transaction.findFirst({
         where: { status: "PENDING" },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: "desc" },
       });
 
       if (latestPending) {

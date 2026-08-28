@@ -7,9 +7,12 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const transactionId = params.id;
+    const { id: transactionId } = await params;
     let targetAmount = 100; // Backup default
 
     // 1. Try to find the transaction in Prisma
@@ -45,9 +48,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     });
 
     return NextResponse.json({ orderId: order.id, amount: order.amount });
-    
   } catch (error: any) {
     console.error("Razorpay API Detailed Error:", error);
-    return NextResponse.json({ error: error?.description || "Failed to create order" }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.description || "Failed to create order" },
+      { status: 500 }
+    );
   }
 }
