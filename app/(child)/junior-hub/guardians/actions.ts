@@ -30,7 +30,7 @@ export async function linkGuardian(formData: FormData) {
       data: {
         childId: user.userId,
         parentId: invite.parentId,
-        dailyLimit: invite.dailyLimit,
+        limitAmount: invite.dailyLimit, // Change dailyLimit to limitAmount here
       },
     }),
     prisma.inviteCode.update({
