@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import LimitTimer from "./LimitTimer";
 
 export default async function JuniorHubPage() {
   const session = await getCurrentUser();
@@ -16,6 +17,9 @@ export default async function JuniorHubPage() {
   if (!junior) return null;
 
   const activeGuardiansCount = junior.connections.length;
+  
+  // Calculate total allowed limit across all guardians
+  const totalDailyLimit = junior.connections.reduce((acc, conn) => acc + conn.limitAmount, 0);
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -23,7 +27,7 @@ export default async function JuniorHubPage() {
   const todayTransactions = await prisma.transaction.findMany({
     where: {
       childId: session.userId,
-      status: "APPROVED_AND_PAID",
+      status: { in: ["PENDING", "APPROVED_AND_PAID"] }, // Include pending to avoid overspending
       createdAt: {
         gte: startOfDay,
       },
@@ -31,6 +35,7 @@ export default async function JuniorHubPage() {
   });
 
   const spentToday = todayTransactions.reduce((acc, tx) => acc + tx.amount, 0);
+  const isLimitExceeded = spentToday >= totalDailyLimit && totalDailyLimit > 0;
 
   return (
     <div className="w-full max-w-lg mx-auto space-y-5 sm:space-y-6 px-1 sm:px-0">
@@ -49,17 +54,23 @@ export default async function JuniorHubPage() {
         <div className="relative z-10">
           <p className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-purple-200">Account Status</p>
           <h2 className="text-2xl sm:text-3xl font-extrabold mt-1 sm:mt-2 tracking-tight">Active & Linked</h2>
+          
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-purple-400/30 text-xs text-purple-200 gap-1.5 sm:gap-0">
             <span>Linked Guardians: <strong className="text-white">{activeGuardiansCount} Active</strong></span>
-            <span>Spent Today: <strong className="text-white">₹{spentToday.toFixed(2)}</strong></span>
+            <span>Spent Today: <strong className="text-white">₹{spentToday.toFixed(2)} / ₹{totalDailyLimit.toFixed(2)}</strong></span>
           </div>
+
+          {/* TIMER DISPLAYS HERE ONLY WHEN LIMIT IS REACHED */}
+          {isLimitExceeded && <LimitTimer />}
+          
         </div>
       </div>
 
       <div className="space-y-3">
         <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Actions</h3>
         
-        <Link href="/junior-hub/scan" className="block">
+        {/* Disable Scan Buttons Visually if Limit is Exceeded */}
+        <Link href={isLimitExceeded ? "#" : "/junior-hub/scan"} className={`block ${isLimitExceeded ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
           <button className="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-between shadow-lg hover:bg-slate-800 transition">
             <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-2xl sm:text-3xl">📷</span>
@@ -72,7 +83,7 @@ export default async function JuniorHubPage() {
           </button>
         </Link>
 
-        <Link href="/junior-hub/scan?manual=true" className="block">
+        <Link href={isLimitExceeded ? "#" : "/junior-hub/scan?manual=true"} className={`block ${isLimitExceeded ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
           <button className="w-full bg-white text-slate-800 border border-slate-200 p-4 rounded-2xl font-bold flex items-center justify-between hover:bg-slate-50 transition shadow-sm">
             <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-2xl sm:text-3xl">⌨️</span>

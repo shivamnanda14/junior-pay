@@ -11,6 +11,7 @@ model ParentUser {
   id           String            @id @default(uuid())
   phoneNumber  String            @unique // The primary login ID
   name         String
+  pin          String          // 6-digit secure app PIN for Parents
   upiId        String?           // E.g., 9876543210@ybl
   connections  ChildConnection[]
   transactions Transaction[]

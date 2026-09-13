@@ -1,11 +1,26 @@
 import TransactionCard from "./TransactionCard";
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Ensures fresh database pull on every request
 
 export default async function HistoryPage() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "PARENT") {
+    redirect("/login");
+  }
+
+  // SECURITY FIX: Only fetch transactions linked to THIS specific parent
+  // INCLUDE FIX: Fetch the child data so the TransactionCard can display their name
   const allTransactions = await prisma.transaction.findMany({
+    where: {
+      parentId: user.userId,
+    },
+    include: {
+      child: true,
+    },
     orderBy: {
       createdAt: 'desc',
     },
@@ -23,7 +38,6 @@ export default async function HistoryPage() {
   );
 
   return (
-    // Adjusted padding and max-width for smoother mobile margins
     <div className="w-full max-w-4xl p-4 sm:p-6 mx-auto">
       <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e1b4b] mb-2">
         Transactions & Approvals
@@ -65,16 +79,23 @@ export default async function HistoryPage() {
             };
 
             return (
-              // Changed to flex-col on mobile so long merchant names don't crush the status badge
               <div key={tx.id} className="border border-slate-200 bg-white rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 shadow-sm">
                 <div>
                   <p className="text-[10px] sm:text-xs text-gray-500 mb-1" suppressHydrationWarning>
+                    From: <span className="font-bold">{tx.child?.name || "Junior"}</span> &nbsp;
                     {new Date(tx.createdAt).toLocaleDateString()} at {new Date(tx.createdAt).toLocaleTimeString()}
                   </p>
                   <p className="font-bold text-gray-900 text-sm sm:text-base">
                     ₹{tx.amount} <span className="font-normal text-xs sm:text-sm">at {tx.merchantName || "Unknown Merchant"}</span>
                   </p>
                   <p className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate max-w-[200px] sm:max-w-none">UPI ID: {tx.merchantVpa}</p>
+                  
+                  {/* DISPLAYING THE REASON HERE */}
+                  {tx.childNote && (
+                    <p className="text-xs text-indigo-700 font-semibold mt-2 bg-indigo-50 inline-block px-2 py-1 rounded-md border border-indigo-100">
+                      Reason: {tx.childNote}
+                    </p>
+                  )}
                 </div>
                 
                 <div className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg border text-[10px] sm:text-xs font-bold tracking-wide w-full sm:w-auto text-center ${statusColors[displayStatus] || "text-slate-600 bg-slate-100"}`}>

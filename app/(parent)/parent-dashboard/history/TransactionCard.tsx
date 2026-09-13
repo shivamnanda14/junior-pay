@@ -53,7 +53,6 @@ export default function TransactionCard({ transaction }: { transaction: any }) {
   const handleApproveAndPay = async () => {
     setIsProcessing(true);
     try {
-      // Send the amount directly in the request body
       const response = await fetch(`/api/transactions/${transaction.id}/approve`, { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,7 +69,7 @@ export default function TransactionCard({ transaction }: { transaction: any }) {
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount: data.amount, // This will now correctly be transaction.amount * 100
+        amount: data.amount,
         currency: "INR",
         name: "Junior Pass",
         description: `Payment for Order`,
@@ -105,19 +104,28 @@ export default function TransactionCard({ transaction }: { transaction: any }) {
       setIsProcessing(false);
     }
   };
+
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className={`border bg-white rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm mb-4 gap-4 transition-all ${isExpired ? 'border-slate-200 opacity-60' : 'border-orange-400'}`}>
         <div>
           <p className="text-xs text-gray-500 mb-1" suppressHydrationWarning>
-            From: <span className="font-bold">rohan</span> &nbsp; 
+            {/* Dynamic Name Fix */}
+            From: <span className="font-bold">{transaction.child?.name || "Junior"}</span> &nbsp; 
             {transaction.createdAt ? new Date(transaction.createdAt).toLocaleTimeString() : "Just now"}
           </p>
           <p className="font-bold text-gray-900 text-lg">
             ₹{transaction.amount} <span className="font-normal text-sm">at {transaction.merchantName || "Unknown Merchant"}</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">UPI ID: {transaction.merchantVpa || "N/A"}</p>
+          
+          {/* DISPLAY THE REASON HERE */}
+          {transaction.childNote && (
+            <p className="text-xs text-indigo-700 font-semibold mt-2 bg-indigo-50 inline-block px-2 py-1 rounded-md border border-indigo-100">
+              Reason: {transaction.childNote}
+            </p>
+          )}
           
           {!isExpired ? (
             <p className="text-xs font-bold text-orange-600 mt-2 flex items-center gap-1">

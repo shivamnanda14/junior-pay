@@ -8,27 +8,36 @@ import { redirect } from "next/navigation";
 export async function authenticateParent(formData: FormData) {
   const phone = formData.get("phone") as string;
   const name = formData.get("name") as string;
+  // ADDED .trim() TO FIX WHITESPACE ISSUES
+  const pin = (formData.get("pin") as string).trim(); 
 
   try {
     let parent = await prisma.parentUser.findUnique({
       where: { phoneNumber: phone },
     });
 
+    // RETURN ERROR OBJECT INSTEAD OF THROWING
+    if (parent && parent.pin !== pin) {
+      return { error: "Invalid PIN. Please try again." }; 
+    }
+
     if (!parent) {
       parent = await prisma.parentUser.create({
         data: {
           phoneNumber: phone,
           name: name || "New Parent",
+          pin: pin,
         },
       });
     }
 
     await createSession(parent.id, "PARENT");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Parent login database error:", error);
-    throw new Error("Failed to connect to database.");
+    return { error: "Failed to connect to database." };
   }
 
+  // Redirect runs if no errors were returned
   redirect("/parent-dashboard");
 }
 

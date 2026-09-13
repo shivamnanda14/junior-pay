@@ -51,6 +51,24 @@ export async function createPaymentRequest(formData: FormData) {
     return { error: "Guardian connection not found." };
   }
 
+  // 2.5 ANTI-SPAM IDEMPOTENCY CHECK (10-Second Window)
+  // Prevents duplicate requests if the junior double-clicks or has network lag
+  const TEN_SECONDS_AGO = new Date(Date.now() - 10 * 1000);
+  
+  const recentDuplicate = await prisma.transaction.findFirst({
+    where: {
+      childId: session.userId,
+      merchantVpa: merchantVpa,
+      amount: amount,
+      status: "PENDING",
+      createdAt: { gte: TEN_SECONDS_AGO },
+    },
+  });
+
+  if (recentDuplicate) {
+    return { error: "Request already sent! Please wait 10 seconds before sending another identical request." };
+  }
+
   // 3. CUMULATIVE DAILY / MONTHLY LIMIT LOGIC
   const now = new Date();
   let startDate = new Date();
