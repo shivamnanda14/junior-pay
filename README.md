@@ -13,6 +13,12 @@ Managing pocket money in the UPI era is broken. Traditional cash allowances leav
 
 ---
 
+## 📄 Official Documentation
+For a deep dive into the architecture, security edge cases, database models, and iteration history, check out the complete project documentation:
+👉 **[View Technical Documentation PDF](./Junior_Pay_Technical_Documentation.pdf)**
+
+---
+
 ## ⚙️ How It Works (The Core Architecture)
 1. **The Request:** The Junior scans a merchant's UPI QR code or manually enters their VPA, specifies an amount, selects a category reason, and inputs their 4-digit security PIN.
 2. **The Security Gate:** The backend executes an **Idempotency Check** (blocking duplicate spam requests within a 10-second window) and validates their cumulative daily or monthly limits.
